@@ -44,11 +44,31 @@ class NeuralNetwork(object):
 
         return outputs
 
-    def backpropagate(self, input_vector, targets):
+    def backpropagate(self, network, input_vector, targets):
         """
         Backpropagation algorithm
         """
-        pass
+        hidden_outputs, outputs = self.feed_forward(network, input_vector)
+
+        output_deltas = [
+            output * (1 - output) * (output - target)
+            for output, target in zip(outputs, targets)]
+
+        # Adjust weights for output layer
+        for i, output_neuron in enumerate(network[-1]):
+            for j, hidden_output in enumerate(hidden_outputs + [1]):
+                output_neuron[j] -= output_deltas[i] * hidden_output
+
+        # back propagate errors to hidden layer
+        hidden_deltas = [
+            hidden_output * (1 - hidden_output) *
+            self.dot(output_deltas, [n[i] for n in outputs])
+            for i, hidden_output in enumerate(hidden_outputs)]
+
+        # Adjust weights of hidden layer
+        for i, hidden_neuron in enumerate(network[0]):
+            for j, inpu in enumerate(input_vector + [1]):
+                hidden_neuron[j] -= hidden_deltas[i] * inpu
 
     def __int__(self):
         super(self.__class__, self).__init__()
